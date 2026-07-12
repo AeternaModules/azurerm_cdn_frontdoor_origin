@@ -1,3 +1,7 @@
+output "cdn_frontdoor_origins_id" {
+  description = "Map of id values across all cdn_frontdoor_origins, keyed the same as var.cdn_frontdoor_origins"
+  value       = { for k, v in azurerm_cdn_frontdoor_origin.cdn_frontdoor_origins : k => v.id }
+}
 output "cdn_frontdoor_origins_cdn_frontdoor_origin_group_id" {
   description = "Map of cdn_frontdoor_origin_group_id values across all cdn_frontdoor_origins, keyed the same as var.cdn_frontdoor_origins"
   value       = { for k, v in azurerm_cdn_frontdoor_origin.cdn_frontdoor_origins : k => v.cdn_frontdoor_origin_group_id }
