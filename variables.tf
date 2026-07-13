@@ -25,75 +25,19 @@ EOT
     certificate_name_check_enabled = bool
     host_name                      = string
     name                           = string
-    enabled                        = optional(bool)   # Default: true
-    http_port                      = optional(number) # Default: 80
-    https_port                     = optional(number) # Default: 443
+    enabled                        = optional(bool)
+    http_port                      = optional(number)
+    https_port                     = optional(number)
     origin_host_header             = optional(string)
-    priority                       = optional(number) # Default: 1
-    weight                         = optional(number) # Default: 500
+    priority                       = optional(number)
+    weight                         = optional(number)
     private_link = optional(object({
       location               = string
       private_link_target_id = string
-      request_message        = optional(string) # Default: "Access request for CDN FrontDoor Private Link Origin"
+      request_message        = optional(string)
       target_type            = optional(string)
     }))
   }))
-  validation {
-    condition = alltrue([
-      for k, v in var.cdn_frontdoor_origins : (
-        length(v.host_name) > 0
-      )
-    ])
-    error_message = "must not be empty"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.cdn_frontdoor_origins : (
-        v.http_port == null || (v.http_port >= 1 && v.http_port <= 65535)
-      )
-    ])
-    error_message = "must be between 1 and 65535"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.cdn_frontdoor_origins : (
-        v.https_port == null || (v.https_port >= 1 && v.https_port <= 65535)
-      )
-    ])
-    error_message = "must be between 1 and 65535"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.cdn_frontdoor_origins : (
-        v.priority == null || (v.priority >= 1 && v.priority <= 5)
-      )
-    ])
-    error_message = "must be between 1 and 5"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.cdn_frontdoor_origins : (
-        v.private_link == null || (v.private_link.request_message == null || (length(v.private_link.request_message) >= 1 && length(v.private_link.request_message) <= 140))
-      )
-    ])
-    error_message = "must be between 1 and 140 characters"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.cdn_frontdoor_origins : (
-        v.private_link == null || (v.private_link.target_type == null || (contains(["blob", "blob_secondary", "Gateway", "managedEnvironments", "sites", "web", "web_secondary"], v.private_link.target_type)))
-      )
-    ])
-    error_message = "must be one of: blob, blob_secondary, Gateway, managedEnvironments, sites, web, web_secondary"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.cdn_frontdoor_origins : (
-        v.weight == null || (v.weight >= 1 && v.weight <= 1000)
-      )
-    ])
-    error_message = "must be between 1 and 1000"
-  }
   # --- Unconfirmed validation candidates, derived from azurerm_cdn_frontdoor_origin's provider source ---
   # Not auto-enabled: either a bespoke provider validator we can't safely translate,
   # or a path that crosses a list-typed block (needs its own for_each wrapping).
@@ -104,13 +48,34 @@ EOT
   #   source:    [from validate.FrontDoorOriginGroupID] !ok
   # path: cdn_frontdoor_origin_group_id
   #   source:    [from validate.FrontDoorOriginGroupID] err != nil
+  # path: host_name
+  #   condition: length(value) > 0
+  #   message:   must not be empty
+  # path: http_port
+  #   condition: value >= 1 && value <= 65535
+  #   message:   must be between 1 and 65535
+  # path: https_port
+  #   condition: value >= 1 && value <= 65535
+  #   message:   must be between 1 and 65535
   # path: origin_host_header
   #   source:    validation.Any(...) - no translation rule yet, add one
+  # path: priority
+  #   condition: value >= 1 && value <= 5
+  #   message:   must be between 1 and 5
   # path: private_link.location
   #   source:    location.EnhancedValidate: no recognizable `if ... { errors = append(...) }` pattern - read it by hand
   # path: private_link.private_link_target_id
   #   source:    [from azure.ValidateResourceID] !ok
   # path: private_link.private_link_target_id
   #   source:    [from azure.ValidateResourceID] err != nil
+  # path: private_link.request_message
+  #   condition: length(value) >= 1 && length(value) <= 140
+  #   message:   must be between 1 and 140 characters
+  # path: private_link.target_type
+  #   condition: contains(["blob", "blob_secondary", "Gateway", "managedEnvironments", "sites", "web", "web_secondary"], value)
+  #   message:   must be one of: blob, blob_secondary, Gateway, managedEnvironments, sites, web, web_secondary
+  # path: weight
+  #   condition: value >= 1 && value <= 1000
+  #   message:   must be between 1 and 1000
 }
 
