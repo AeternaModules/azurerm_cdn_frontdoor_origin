@@ -40,7 +40,7 @@ output "cdn_frontdoor_origins_priority" {
 }
 output "cdn_frontdoor_origins_private_link" {
   description = "Map of private_link values across all cdn_frontdoor_origins, keyed the same as var.cdn_frontdoor_origins"
-  value       = { for k, v in azurerm_cdn_frontdoor_origin.cdn_frontdoor_origins : k => v.private_link if v.private_link != null && length(v.private_link) > 0 }
+  value       = { for k, v in azurerm_cdn_frontdoor_origin.cdn_frontdoor_origins : k => one(v.private_link) if v.private_link != null && length(v.private_link) > 0 }
 }
 output "cdn_frontdoor_origins_weight" {
   description = "Map of weight values across all cdn_frontdoor_origins, keyed the same as var.cdn_frontdoor_origins"
